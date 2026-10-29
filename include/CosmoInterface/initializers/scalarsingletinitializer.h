@@ -60,7 +60,7 @@ namespace TempLat
       } else if (flagSIC == InitialConditionsType::S::DefectsNetwork)
         initializeScalarDefectsNetwork(model, fg, rPar.lcorr);
       else if (flagSIC == InitialConditionsType::S::DefectsWhiteNoise)
-        initializeScalarDefectsWhiteNoise(model, fg, rPar.kCutoff, rPar.deltaNoise);
+        initializeScalarDefectsWhiteNoise(model, fg, rPar.kCutoff, rPar.kCutoffLow, rPar.deltaNoise);
       else if (flagSIC != InitialConditionsType::S::Homogeneous)
         throw(SICNotImplemented("The initial condition provided for scalars is not implemented."));
 
@@ -133,7 +133,7 @@ namespace TempLat
     }
 
     template <class Model, typename T>
-    static void initializeScalarDefectsWhiteNoise(Model &model, const FluctuationsGenerator<T> &fg, T kCutoff, T delta)
+    static void initializeScalarDefectsWhiteNoise(Model &model, const FluctuationsGenerator<T> &fg, T kCutoff, T kCutoffLow, T delta)
     {
       auto toolBox = model.getToolBox();
       using RGF = RandomGaussianField<T, Model::NDim>;
@@ -142,7 +142,7 @@ namespace TempLat
 
               // 1. Norm of both real and imaginarry components:
               auto fFluctuationNormDefect =
-                  fg.getFluctuationsNormWhiteNoise(model, model.fldS(i), kCutoff, delta); // component 0
+                  fg.getFluctuationsNormWhiteNoise(model, model.fldS(i), kCutoff, kCutoffLow, delta); // component 0
 
               // 2. To obtain the amplitude at each point, multiply by a random Gaussian
               auto a0 = fFluctuationNormDefect *
