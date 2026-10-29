@@ -64,7 +64,7 @@ namespace TempLat
       } else if (flagU1IC == InitialConditionsType::U1::DefectsNetwork)
         initializeStringNetwork(model, fg, rPar.lcorr);
       else if (flagU1IC == InitialConditionsType::U1::DefectsWhiteNoise)
-        initializeStringNoise(model, fg, rPar.kCutoff, rPar.deltaNoise);
+        initializeStringNoise(model, fg, rPar.kCutoff, rPar.kCutoffLow, rPar.deltaNoise);
       else
         throw(U1ICNotImplemented("The initial condition provided for U1 is not implemented."));
     }
@@ -275,9 +275,9 @@ namespace TempLat
     }
 
     template <class Model, typename T>
-    static void initializeStringNoise(Model &model, FluctuationsGenerator<T> &fg, T kCutoff, T delta)
+    static void initializeStringNoise(Model &model, FluctuationsGenerator<T> &fg, T kCutoff, T kCutoffLow, T delta)
     {
-      addFluctuationsCScalarNoise(model, fg, kCutoff, delta);
+      addFluctuationsCScalarNoise(model, fg, kCutoff, kCutoffLow, delta);
 
       if constexpr (Model::NU1 > 0) {
         ForLoop(a, 0, Model::NU1 - 1,
@@ -289,7 +289,7 @@ namespace TempLat
     }
 
     template <class Model, typename T>
-    static void addFluctuationsCScalarNoise(Model &model, FluctuationsGenerator<T> &fg, T kCutOff, T delta)
+    static void addFluctuationsCScalarNoise(Model &model, FluctuationsGenerator<T> &fg, T kCutOff, T kCutOffLow, T delta)
     {
 
       auto toolBox = model.getToolBox();
@@ -298,7 +298,7 @@ namespace TempLat
       ForLoop(i, 0, Model::NCs - 1,
 
               auto fFluctuationNormWhiteNoise =
-                  fg.getFluctuationsNormWhiteNoise(model, model.fldCS(i)(0_c), kCutOff, delta); // component 0
+                  fg.getFluctuationsNormWhiteNoise(model, model.fldCS(i)(0_c), kCutOff, kCutOffLow, delta); // component 0
 
               // 2. To obtain the amplitude at each point, multiply by a random Gaussian
               auto a0 = fFluctuationNormWhiteNoise *

@@ -80,12 +80,12 @@ namespace TempLat
     }
 
     template <class Model>
-    auto getFluctuationsNormWhiteNoise(Model &model, Field<T, Model::NDim> f, T kCutOff, T delta) const
+    auto getFluctuationsNormWhiteNoise(Model &model, Field<T, Model::NDim> f, T kCutOff, T kCutOffLow, T delta) const
     {
       FourierSite<Model::NDim> ntilde(f.getToolBox());
       auto k = ntilde.norm() * f.getKIR();
 
-      auto Hcut = heaviside(kCutOff - k) * pow(k, (T(3) - T(Model::NDim)) / T(2));
+      auto Hcut = heaviside(kCutOff - k) * heaviside(k - kCutOffLow) * pow(k, (T(3) - T(Model::NDim)) / T(2));
 
       if constexpr (Model::NDim == 1)
         return Hcut * delta * (model.omegaStar / model.fStar * pow(lSide / pow<2>(f.getDx()), 0.5f)) * pow(T(2), T(-0.5)) /
